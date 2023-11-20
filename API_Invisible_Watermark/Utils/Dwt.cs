@@ -103,7 +103,7 @@ public class Dwt
         {
             for (int j = 0; j < cols; j++)
             {
-                for (int i = 0; i < row.Length; i++)
+                for (int i = 0; i < col.Length; i++)
                     col[i] = data[i, j];
 
                 IWT(col);

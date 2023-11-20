@@ -10,19 +10,18 @@ public class WatermarkService:IWatermarkService
     public async Task<ResultResponse> CreateWatermarkedImage(IFormFile host, IFormFile watermark)
     {
         var hostBitmap = await host.ToBitmap();
-        var resizedHost = hostBitmap.Resize(512, 512);
+        var hostBitmapWidth = hostBitmap.Width;
+        var hostBitmapHeight = hostBitmap.Height;
 
         var watermarkBitmap = await watermark.ToBitmap();
-        // var filledWatermark = watermarkBitmap.FillTransparent(512,512);
-    
-        var histogramHost = resizedHost.GetRgb();
-        var histogramOriginal = resizedHost.GetRgb();
-        var histogramWatermark = watermarkBitmap.GetRgb();
-
         var watermarkWidth = watermarkBitmap.Width;
         var watermarkHeight = watermarkBitmap.Height;
         
-        histogramHost.Scaling(512,512);
+        var histogramHost = hostBitmap.GetRgb();
+        var histogramOriginal = hostBitmap.GetRgb();
+        var histogramWatermark = watermarkBitmap.GetRgb();
+
+        histogramHost.Scaling(hostBitmapWidth,hostBitmapHeight);
         histogramWatermark.Scaling(watermarkWidth,watermarkHeight);
         
         Dwt.FWT(histogramHost.Alpha,2);
@@ -35,13 +34,13 @@ public class WatermarkService:IWatermarkService
         Dwt.FWT(histogramWatermark.Green,2);
         Dwt.FWT(histogramWatermark.Blue,2);
 
-        histogramHost.Normalize(512,512);
+        histogramHost.Normalize(hostBitmapWidth,hostBitmapHeight);
         histogramWatermark.Normalize(watermarkWidth,watermarkHeight);
 
-        var hostDwt = histogramHost.ToBitmap(512, 512).ToBase64();
+        var hostDwt = histogramHost.ToBitmap(hostBitmapWidth,hostBitmapHeight).ToBase64();
         var watermarkDwt = histogramWatermark.ToBitmap(watermarkWidth,watermarkHeight).ToBase64();
         
-        histogramHost.Scaling(512,512);
+        histogramHost.Scaling(hostBitmapWidth,hostBitmapHeight);
         histogramWatermark.Scaling(watermarkWidth,watermarkHeight);
         
         var LL2HostAlpha = Dwt.GetLl2(histogramHost.Alpha);
@@ -80,18 +79,18 @@ public class WatermarkService:IWatermarkService
         Dwt.ChangeLl2(histogramHost.Green,newLL2HostGreen);
         Dwt.ChangeLl2(histogramHost.Blue,newLL2HostBlue);
         
-        histogramHost.Normalize(512,512);
+        histogramHost.Normalize(hostBitmapWidth,hostBitmapHeight);
         
-        histogramHost.Scaling(512,512);
+        histogramHost.Scaling(hostBitmapWidth,hostBitmapHeight);
         
         Dwt.IWT(histogramHost.Alpha,2);
         Dwt.IWT(histogramHost.Red,2);
         Dwt.IWT(histogramHost.Green,2);
         Dwt.IWT(histogramHost.Blue,2);
         
-        histogramHost.Normalize(512,512);
+        histogramHost.Normalize(hostBitmapWidth,hostBitmapHeight);
         
-        var watermarkedImage = histogramHost.ToBitmap(512, 512);
+        var watermarkedImage = histogramHost.ToBitmap(hostBitmapWidth,hostBitmapHeight);
 
         var result = new ResultResponse
         {
